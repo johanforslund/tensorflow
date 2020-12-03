@@ -64,6 +64,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 
   if ((input->type == kTfLiteInt16 && output->type == kTfLiteInt8) ||
       (input->type == kTfLiteInt8 && output->type == kTfLiteInt8) ||
+      (input->type == kTfLiteInt8 && output->type == kTfLiteUInt8) ||
       (input->type == kTfLiteUInt8 && output->type == kTfLiteInt8) ||
       (input->type == kTfLiteInt16 && output->type == kTfLiteInt16) ||
       (input->type == kTfLiteInt16 && output->type == kTfLiteInt32)) {
@@ -158,6 +159,13 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                                   data->output_shift, data->input_zero_point,
                                   data->quantization_params.zero_point,
                                   tflite::micro::GetTensorData<int8_t>(output));
+        break;
+      case kTfLiteUInt8:
+        reference_ops::Requantize(tflite::micro::GetTensorData<int8_t>(input),
+                                  size, data->output_multiplier,
+                                  data->output_shift, data->input_zero_point,
+                                  data->quantization_params.zero_point,
+                                  tflite::micro::GetTensorData<uint8_t>(output));
         break;
       default:
         TF_LITE_KERNEL_LOG(context, "Input %s, output %s not supported.",
